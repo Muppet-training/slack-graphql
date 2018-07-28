@@ -14,6 +14,9 @@ import {
 import cors from 'cors';
 import models from './models';
 
+const SECRET = 'asiodfhoi1hoi23jnl1kejd';
+const SECRET2 = 'asiodfhoi1hoi23jnl1kejasdjlkfasdd';
+
 const typeDefs = mergeTypes(
 	fileLoader(path.join(__dirname, './schema'))
 );
@@ -39,10 +42,13 @@ app.use(
 			models,
 			user: {
 				id: 1
-			}
+			},
+			SECRET,
+			SECRET2
 		}
 	})
 );
+
 app.use(
 	'/graphiql',
 	graphiqlExpress({ endpointURL: graphqlEndpoint })

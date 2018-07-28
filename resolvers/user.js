@@ -19,8 +19,11 @@ export default {
 			models.User.findAll()
 	},
 	Mutation: {
-		login: (parent, { email, password }, { models }) =>
-			tryLogin(),
+		login: (
+			parent,
+			{ email, password },
+			{ models, SECRET, SECRET2 }
+		) => tryLogin(email, password, models, SECRET),
 
 		// We pass in the models using the context connecting the two in the root index.js
 		// This passes in the args into this resolver file

@@ -1,77 +1,117 @@
+import jwt from 'jsonwebtoken';
+import _ from 'lodash';
 import bcrypt from 'bcrypt';
 
-export default (sequelize, DataTypes) => {
-	const User = sequelize.define(
-		'user',
+export const createTokens = async (user, secret, secret2) => {
+	const createToken = jwt.sign(
 		{
-			username: {
-				type: DataTypes.STRING,
-				unique: true,
-				validate: {
-					isAlphanumeric: {
-						args: true,
-						msg:
-							'The username can only contain letters and numbers'
-					},
-					len: {
-						args: [ 3, 25 ],
-						msg:
-							'The username needs to be between 3 and 25 characters long'
-					}
-				}
-			},
-			email: {
-				type: DataTypes.STRING,
-				unique: true,
-				validate: {
-					isEmail: {
-						args: true,
-						msg: 'Invalid email'
-					}
-				}
-			},
-			password: {
-				type: DataTypes.STRING,
-				validate: {
-					len: {
-						args: [ 5, 100 ],
-						msg:
-							'The password needs to be between 5 and 100 characters long'
-					}
-				}
-			}
+			user: _.pick(user, [ 'id' ])
 		},
+		secret,
 		{
-			hooks: {
-				afterValidate: async (user) => {
-					const hashedPassword = await bcrypt.hash(
-						user.password,
-						12
-					);
-					// eslint-disable-next-line no-param-reassign
-					user.password = hashedPassword;
-				}
-			}
+			expiresIn: '1h'
 		}
 	);
 
-	User.associate = (models) => {
-		User.belongsToMany(models.Team, {
-			through: models.Member,
-			foreignKey: {
-				name: 'userId',
-				field: 'user_id'
-			}
-		});
-		// N:M
-		User.belongsToMany(models.Channel, {
-			through: 'channel_member',
-			foreignKey: {
-				name: 'userId',
-				field: 'user_id'
-			}
-		});
-	};
+	const createRefreshToken = jwt.sign(
+		{
+			user: _.pick(user, 'id')
+		},
+		secret2,
+		{
+			expiresIn: '7d'
+		}
+	);
 
-	return User;
+	return [ createToken, createRefreshToken ];
+};
+
+export const refreshTokens = async (
+	token,
+	refreshToken,
+	models,
+	SECRET
+) => {
+	let userId = -1;
+	try {
+		const { user: { id } } = jwt.decode(refreshToken);
+		userId = id;
+	} catch (err) {
+		return {};
+	}
+
+	if (!userId) {
+		return {};
+	}
+
+	const user = await models.User.findOne({
+		where: { id: userId },
+		raw: true
+	});
+
+	if (!user) {
+		return {};
+	}
+
+	try {
+		jwt.verify(refreshToken, user.refreshSecret);
+	} catch (err) {
+		return {};
+	}
+
+	const [ newToken, newRefreshToken ] = await createTokens(
+		user,
+		SECRET,
+		user.refreshSecret
+	);
+	return {
+		token: newToken,
+		refreshToken: newRefreshToken,
+		user
+	};
+};
+
+export const tryLogin = async (
+	email,
+	password,
+	models,
+	SECRET,
+	SECRET2
+) => {
+	const user = await models.User.findOne({
+		where: { email },
+		raw: true
+	});
+	if (!user) {
+		// user with provided email not found
+		return {
+			ok: false,
+			errors: [ { path: 'email', message: 'Wrong email' } ]
+		};
+	}
+
+	const valid = await bcrypt.compare(password, user.password);
+	if (!valid) {
+		// bad password
+		return {
+			ok: false,
+			errors: [
+				{ path: 'password', message: 'Wrong password' }
+			]
+		};
+	}
+
+	const refreshTokenSecret = user.password + SECRET2;
+
+	const [ token, refreshToken ] = await createTokens(
+		user,
+		SECRET,
+		refreshTokenSecret
+	);
+
+	return {
+		ok: true,
+		token,
+		refreshToken
+	};
 };

@@ -26,6 +26,7 @@ class Register extends Component {
 	};
 
 	onSubmit = async (e) => {
+		console.log(this.state);
 		this.setState({
 			usernameError: '',
 			emailError: '',
