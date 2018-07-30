@@ -1,18 +1,17 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { extendObservable } from 'mobx';
 import { observer } from 'mobx-react';
-import { graphql } from 'react-apollo';
-import gql from 'graphql-tag';
 import {
-	Button,
+	Message,
 	Form,
+	Button,
 	Input,
 	Container,
-	Header,
-	Message
+	Header
 } from 'semantic-ui-react';
+import { gql, graphql } from 'react-apollo';
 
-class Login extends Component {
+class Login extends React.Component {
 	constructor(props) {
 		super(props);
 
@@ -25,11 +24,12 @@ class Login extends Component {
 
 	onSubmit = async () => {
 		const { email, password } = this;
-		const { mutate, history } = this.props;
-		const response = await mutate({
+		const response = await this.props.mutate({
 			variables: { email, password }
 		});
+
 		console.log(response);
+
 		const {
 			ok,
 			token,
@@ -40,11 +40,10 @@ class Login extends Component {
 		if (ok) {
 			localStorage.setItem('token', token);
 			localStorage.setItem('refreshToken', refreshToken);
-			history.push('/');
+			this.props.history.push('/');
 		} else {
 			const err = {};
 			errors.forEach(({ path, message }) => {
-				// err['passwordError'] = 'too short...';
 				err[`${path}Error`] = message;
 			});
 
@@ -76,33 +75,33 @@ class Login extends Component {
 
 		return (
 			<Container text>
-				<Header as="h2"> Login </Header>
+				<Header as="h2">Login</Header>
 				<Form>
 					<Form.Field error={!!emailError}>
 						<Input
 							name="email"
 							onChange={this.onChange}
 							value={email}
-							placeholder="email"
+							placeholder="Email"
 							fluid
 						/>
 					</Form.Field>
 					<Form.Field error={!!passwordError}>
 						<Input
 							name="password"
-							type="password"
 							onChange={this.onChange}
 							value={password}
+							type="password"
 							placeholder="Password"
 							fluid
 						/>
 					</Form.Field>
-					<Button onClick={this.onSubmit}> Login </Button>
+					<Button onClick={this.onSubmit}>Submit</Button>
 				</Form>
 				{errorList.length ? (
 					<Message
 						error
-						header="There were some errors with your submission"
+						header="There was some errors with your submission"
 						list={errorList}
 					/>
 				) : null}

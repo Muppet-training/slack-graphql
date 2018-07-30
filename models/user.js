@@ -1,37 +1,59 @@
 import bcrypt from 'bcrypt';
 
 export default (sequlize, DataTypes) => {
-	const User = sequlize.define('user', {
-		username: {
-			type: DataTypes.STRING,
-			unique: true,
-			validate: {
-				isAlphanumeric: {
-					args: true,
-					msg:
-						'The username can only container letters and numbers..'
-				},
-				len: {
-					args: [ 3, 25 ],
-					msg:
-						'The username needs to be between 3 & 25 characters long'
+	const User = sequlize.define(
+		'user',
+		{
+			username: {
+				type: DataTypes.STRING,
+				unique: true,
+				validate: {
+					isAlphanumeric: {
+						args: true,
+						msg:
+							'The username can only container letters and numbers..'
+					},
+					len: {
+						args: [ 3, 25 ],
+						msg:
+							'The username needs to be between 3 & 25 characters long'
+					}
+				}
+			},
+			email: {
+				type: DataTypes.STRING,
+				unique: true,
+				validate: {
+					isEmail: {
+						args: true,
+						msg: 'Your email looks to be invalid..'
+					}
+				}
+			},
+			password: {
+				type: DataTypes.STRING,
+				validate: {
+					len: {
+						args: [ 5, 99 ],
+						msg:
+							'The password needs to be between 5 and 99 characters long'
+					}
 				}
 			}
 		},
-		email: {
-			type: DataTypes.STRING,
-			unique: true,
-			validate: {
-				isEmail: {
-					args: true,
-					msg: 'Your email looks to be invalid..'
+		{
+			hooks: {
+				afterValidate: async (user) => {
+					const hashedPassword = await bcrypt.hash(
+						user.password,
+						12
+					);
+					// eslint-disable-next-line no-param-reassign
+					user.password = hashedPassword;
 				}
 			}
-		},
-		password: {
-			type: DataTypes.STRING
 		}
-	});
+	);
 
 	User.associate = (models) => {
 		User.belongsToMany(models.Team, {

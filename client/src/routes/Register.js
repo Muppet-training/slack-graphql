@@ -3,6 +3,7 @@ import { withRouter } from 'react-router-dom';
 import {
 	Container,
 	Header,
+	Form,
 	Input,
 	Button,
 	Message
@@ -25,7 +26,7 @@ class Register extends Component {
 		this.setState({ [name]: value });
 	};
 
-	onSubmit = async (e) => {
+	onSubmit = async () => {
 		console.log(this.state);
 		this.setState({
 			usernameError: '',
@@ -34,14 +35,16 @@ class Register extends Component {
 		});
 
 		const { username, email, password } = this.state;
-		const response = await this.props.mutate({
+		const { mutate, history } = this.props;
+
+		const response = await mutate({
 			variables: { username, email, password }
 		});
 
 		const { ok } = response.data.register;
 
 		if (ok) {
-			this.props.history.push('/');
+			history.push('/');
 		} else {
 			const err = {};
 			response.data.register.errors.forEach(
@@ -82,38 +85,43 @@ class Register extends Component {
 		return (
 			<Container text>
 				<Header as="h2">Register</Header>
-				<Input
-					// Cast the error to a boolean with a !! sign
-					// Therefore..
-					// ''     false
-					// !''    true
-					// !!''   false
-					error={!!usernameError}
-					name="username"
-					onChange={this.onChange}
-					value={username}
-					placeholder="username"
-					fluid
-				/>
-				<Input
-					error={!!emailError}
-					name="email"
-					onChange={this.onChange}
-					value={email}
-					placeholder="email"
-					fluid
-				/>
-				<Input
-					error={!!passwordError}
-					name="password"
-					onChange={this.onChange}
-					value={password}
-					placeholder="password"
-					fluid
-					type="password"
-				/>
-				<Button onClick={this.onSubmit}>Submit</Button>
-				{usernameError || emailError || passwordError ? (
+				<Form>
+					<Form.Field error={!!usernameError}>
+						<Input
+							// Cast the error to a boolean with a !! sign
+							// Therefore..
+							// ''     false
+							// !''    true
+							// !!''   false
+							name="username"
+							onChange={this.onChange}
+							value={username}
+							placeholder="username"
+							fluid
+						/>
+					</Form.Field>
+					<Form.Field error={!!emailError}>
+						<Input
+							name="email"
+							onChange={this.onChange}
+							value={email}
+							placeholder="email"
+							fluid
+						/>
+					</Form.Field>
+					<Form.Field error={!!passwordError}>
+						<Input
+							name="password"
+							onChange={this.onChange}
+							value={password}
+							placeholder="password"
+							fluid
+							type="password"
+						/>
+					</Form.Field>
+					<Button onClick={this.onSubmit}>Submit</Button>
+				</Form>
+				{errorList.length ? (
 					<Message
 						error
 						header="There was some errors with your submission"

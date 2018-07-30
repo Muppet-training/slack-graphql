@@ -1,4 +1,4 @@
-import bcrypt from 'bcrypt';
+// import bcrypt from 'bcrypt';
 import _ from 'lodash';
 
 import { tryLogin } from '../auth';
@@ -13,45 +13,22 @@ const formatErrors = (e, models) => {
 
 export default {
 	Query: {
-		getUser: (parent, args, { models }, Info) =>
+		getUser: (parent, args, { models }) =>
 			models.User.findOne({ where: args.id }),
-		allUsers: (parent, args, { models }, Info) =>
-			models.User.findAll()
+		allUsers: (parent, args, { models }) => models.User.findAll()
 	},
 	Mutation: {
 		login: (
 			parent,
 			{ email, password },
 			{ models, SECRET, SECRET2 }
-		) => tryLogin(email, password, models, SECRET),
+		) => tryLogin(email, password, models, SECRET, SECRET2),
 
 		// We pass in the models using the context connecting the two in the root index.js
 		// This passes in the args into this resolver file
-		register: async (
-			parent,
-			{ password, ...otherArgs },
-			{ models },
-			Info
-		) => {
-			const hashedPassword = await bcrypt.hash(password, 12);
+		register: async (parent, args, { models }) => {
 			try {
-				if (password.length < 5 || password.length > 99) {
-					return {
-						ok: false,
-						errors: [
-							{
-								path: 'password',
-								message:
-									'The password must be between 5 & 99 characters long'
-							}
-						]
-					};
-				}
-
-				const user = await models.User.create({
-					...otherArgs,
-					password: hashedPassword
-				});
+				const user = await models.User.create(args);
 
 				return {
 					ok: true,
