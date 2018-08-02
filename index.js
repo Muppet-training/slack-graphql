@@ -35,7 +35,7 @@ const app = express();
 app.use(cors('*'));
 
 const addUser = async (req, res, next) => {
-	const token = req.header['x-token'];
+	const token = req.headers['x-token'];
 	if (token) {
 		try {
 			const { user } = jwt.verify(token, SECRET);

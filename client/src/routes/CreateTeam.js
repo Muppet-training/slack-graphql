@@ -1,18 +1,18 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { extendObservable } from 'mobx';
 import { observer } from 'mobx-react';
-import { graphql } from 'react-apollo';
-import gql from 'graphql-tag';
 import {
-	Button,
+	Message,
 	Form,
+	Button,
 	Input,
 	Container,
-	Header,
-	Message
+	Header
 } from 'semantic-ui-react';
+import { graphql } from 'react-apollo';
+import gql from 'graphql-tag';
 
-class CreateTeam extends Component {
+class CreateTeam extends React.Component {
 	constructor(props) {
 		super(props);
 
@@ -24,11 +24,20 @@ class CreateTeam extends Component {
 
 	onSubmit = async () => {
 		const { name } = this;
-		const { mutate, history } = this.props;
-		const response = await mutate({
-			variables: { name }
-		});
+		let response = null;
+		const { history, mutate } = this.props;
+
+		try {
+			response = await mutate({
+				variables: { name }
+			});
+		} catch (err) {
+			history.push('/login');
+			return;
+		}
+
 		console.log(response);
+
 		const { ok, errors } = response.data.createTeam;
 
 		if (ok) {
@@ -36,7 +45,6 @@ class CreateTeam extends Component {
 		} else {
 			const err = {};
 			errors.forEach(({ path, message }) => {
-				// err['passwordError'] = 'too short...';
 				err[`${path}Error`] = message;
 			});
 
@@ -60,7 +68,7 @@ class CreateTeam extends Component {
 
 		return (
 			<Container text>
-				<Header as="h2"> Create a Team </Header>
+				<Header as="h2">Create a team</Header>
 				<Form>
 					<Form.Field error={!!nameError}>
 						<Input
@@ -71,12 +79,12 @@ class CreateTeam extends Component {
 							fluid
 						/>
 					</Form.Field>
-					<Button onClick={this.onSubmit}> Login </Button>
+					<Button onClick={this.onSubmit}>Submit</Button>
 				</Form>
 				{errorList.length ? (
 					<Message
 						error
-						header="There were some errors with your submission"
+						header="There was some errors with your submission"
 						list={errorList}
 					/>
 				) : null}
