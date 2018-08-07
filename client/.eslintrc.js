@@ -11,6 +11,7 @@ module.exports = {
 		'object-curly-newline': 0,
 		'implicit-arrow-linebreak': 0,
 		'arrow-parens': 0,
+		'react/jsx-indent': [ enabled, 'tab' | 3 ],
 		'no-confusing-arrow': 0,
 		'react/jsx-one-expression-per-line': 0,
 		'react/jsx-filename-extension': [

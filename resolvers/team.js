@@ -2,6 +2,15 @@ import formatErrors from '../utils/formatErrors';
 import requiresAuth from '../utils/permissions';
 
 export default {
+	Query: {
+		allTeams: requiresAuth.createResolver(
+			async (parent, args, { models, user }) =>
+				models.Team.findAll(
+					{ where: { owner: user.id } },
+					{ raw: true }
+				)
+		)
+	},
 	Mutation: {
 		createTeam: requiresAuth.createResolver(
 			async (parent, args, context) => {
@@ -22,5 +31,9 @@ export default {
 				}
 			}
 		)
+	},
+	Team: {
+		channels: ({ id }, args, { models }) =>
+			models.Channel.findAll({ where: { team_id: id } })
 	}
 };

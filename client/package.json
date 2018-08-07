@@ -12,6 +12,7 @@
 		"graphql": "^0.13.2",
 		"graphql-tag": "^2.9.2",
 		"jwt-decode": "^2.2.0",
+		"loadash": "^1.0.0",
 		"mobx": "^5.0.3",
 		"mobx-react": "^5.2.3",
 		"react": "^16.4.1",
