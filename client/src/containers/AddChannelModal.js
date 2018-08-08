@@ -1,4 +1,5 @@
 import React from 'react';
+import _ from 'lodash'
 import { Form, Input, Button, Modal } from 'semantic-ui-react';
 import { withFormik } from 'formik';
 import gql from 'graphql-tag';
@@ -86,17 +87,20 @@ export default compose(
 					const data = store.readQuery({
 						query: allTeamsQuery
 					});
-					console.log(data);
+
 					const teamIdx = findIndex(data.allTeams, [
 						'id',
 						team_id
 					]);
 					// Add our comment from the mutation to the end.
-					data.allTeams[teamIdx].channels.push(channel);
+
+					// deep clone the 'non extensible' object into a new data object
+					const writeData = _.cloneDeep(data)
+					writeData.allTeams[teamIdx].channels.push(channel);
 					// Write our data back to the cache.
 					store.writeQuery({
 						query: allTeamsQuery,
-						data
+						data: writeData
 					});
 				}
 			});
