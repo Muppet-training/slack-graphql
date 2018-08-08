@@ -15,12 +15,18 @@ export default {
 		createTeam: requiresAuth.createResolver(
 			async (parent, args, context) => {
 				try {
-					await context.models.Team.create({
+					const team = await context.models.Team.create({
 						...args,
 						owner: context.user.id
 					});
+					await context.models.Channel.create({
+						name: 'genral',
+						public: true,
+						team_id: team.id
+					});
 					return {
-						ok: true
+						ok: true,
+						team
 					};
 				} catch (err) {
 					console.log(err);

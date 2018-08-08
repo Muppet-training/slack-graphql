@@ -46,7 +46,11 @@ export default () => (
 			<Route path="/" exact component={Home} />
 			<Route path="/register" exact component={Register} />
 			<Route path="/login" exact component={Login} />
-			<Route path="/view-team" exact component={ViewTeam} />
+			<Route
+				path="/view-team/:team_id?/:channel_id?"
+				exact
+				component={ViewTeam}
+			/>
 			<PrivateRoute
 				path="/create-team"
 				exact
