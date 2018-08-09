@@ -124,3 +124,5 @@ export default compose(
 		}
 	})
 )(AddChannelModal);
+
+//File updated
