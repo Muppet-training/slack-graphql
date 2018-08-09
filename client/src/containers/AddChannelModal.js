@@ -98,7 +98,7 @@ export default compose(
 					const data = store.readQuery({
 						query: allTeamsQuery
 					});
-					console.log(data);
+
 					const teamIdx = findIndex(data.allTeams, [
 						'id',
 						team_id
@@ -115,7 +115,6 @@ export default compose(
 					// Write our data back to the cache.
 					store.writeQuery({
 						query: allTeamsQuery,
-						// data
 						data: writeData
 					});
 				}
