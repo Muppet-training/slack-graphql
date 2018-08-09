@@ -1,4 +1,5 @@
 import React from 'react';
+import _ from 'lodash';
 import { Form, Input, Button, Modal } from 'semantic-ui-react';
 import { withFormik } from 'formik';
 import gql from 'graphql-tag';
@@ -74,6 +75,17 @@ export default compose(
 		) => {
 			await mutate({
 				variables: { team_id, name: values.name },
+				optimisticResponse: {
+					createChannel: {
+						__typename: 'Mutation',
+						ok: true,
+						channel: {
+							id: -1,
+							name: values.name,
+							__typename: 'Channel'
+						}
+					}
+				},
 				update: (store, { data: { createChannel } }) => {
 					const { ok, channel, errors } = createChannel;
 
@@ -92,11 +104,19 @@ export default compose(
 						team_id
 					]);
 					// Add our comment from the mutation to the end.
-					data.allTeams[teamIdx].channels.push(channel);
+					// data.allTeams[teamIdx].channels.push(channel);
+
+					// deep clone the 'non extensible' object into a new data object
+					const writeData = _.cloneDeep(data);
+					writeData.allTeams[teamIdx].channels.push(
+						channel
+					);
+
 					// Write our data back to the cache.
 					store.writeQuery({
 						query: allTeamsQuery,
-						data
+						// data
+						data: writeData
 					});
 				}
 			});
