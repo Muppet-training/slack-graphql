@@ -1,46 +1,26 @@
-const addUser = async (req, res, next) => {
-	const token = req.headers['x-token'];
-	if (token) {
-		try {
-			const { user } = jwt.verify(token, SECRET);
-			req.user = user;
-		} catch (err) {
-			const refreshToken = req.headers['x-refresh-token'];
-			const newTokens = await refreshTokens(
-				token,
-				refreshToken,
-				models,
-				SECRET,
-				SECRET2
-			);
-			if (newTokens.token && newTokens.refreshToken) {
-				res.set(
-					'Access-Control-Expose-Headers',
-					'x-token, x-refresh-token'
-				);
-				res.set('x-token', newTokens.token);
-				res.set('x-refresh-token', newTokens.refreshToken);
+export default compose(
+	graphql(addTeamMemberMutation),
+	withFormik({
+		mapPropsToValues: () => ({ email: '' }),
+		handleSubmit: async (
+			values,
+			{
+				props: { onClose, teamId, mutate },
+				setSubmitting,
+				setErrors
 			}
-			req.user = newTokens.user;
+		) => {
+			const response = await mutate({
+				variables: { teamId, email: values.email }
+			});
+			const { ok, errors } = response.data.addTeamMember;
+			if (ok) {
+				onClose();
+				setSubmitting(false);
+			} else {
+				setSubmitting(false);
+				setErrors(normalizeErrors(errors));
+			}
 		}
-	}
-	next();
-};
-
-app.use(addUser);
-
-const graphqlEndpoint = '/graphql';
-
-app.use(
-	graphqlEndpoint,
-	bodyParser.json(),
-	graphqlExpress((req) => ({
-		schema,
-		context: {
-			models,
-			user: req.user,
-			SECRET,
-			SECRET2
-		}
-	}))
-);
+	})
+)(InvitePeopleModal);

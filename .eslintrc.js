@@ -12,6 +12,7 @@ module.exports = {
 		'implicit-arrow-linebreak': 0,
 		'arrow-parens': 0,
 		'array-bracket-spacing': 0,
+		camelcase: 0,
 		'comma-dangle': [ 'error', 'never' ],
 		'max-len': 0,
 		indent: [

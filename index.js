@@ -86,6 +86,6 @@ app.use(
 	graphiqlExpress({ endpointURL: graphqlEndpoint })
 );
 
-models.sequelize.sync().then(() => {
+models.sequelize.sync({}).then(() => {
 	app.listen(8080);
 });

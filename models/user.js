@@ -57,7 +57,7 @@ export default (sequlize, DataTypes) => {
 
 	User.associate = (models) => {
 		User.belongsToMany(models.Team, {
-			through: 'member',
+			through: models.Member,
 			foreignKey: 'user_id'
 		});
 		// N:M
